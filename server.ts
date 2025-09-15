@@ -1,4 +1,3 @@
-
 import express from 'express';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -10,10 +9,10 @@ import { ChatMessage, MerakiDevice, NetworkConfiguration, Sender, WsUserMessage 
 dotenv.config();
 
 const app = express();
+// Fix: Swapped the order of middleware. This can sometimes resolve type inference issues in Express.
+app.use(express.json());
 // Enable CORS for all routes
 app.use(cors());
-// FIX: Add express.json() middleware to parse JSON request bodies for all routes, resolving a type error.
-app.use(express.json());
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
@@ -84,9 +83,8 @@ wss.on('connection', (ws: WebSocket) => {
 
 // --- Webex Webhook Endpoint ---
 
-// FIX: Removed express.json() from route-specific middleware as it is now handled globally.
 app.post('/webex-webhook', (req, res) => {
-  const { data } = req.body;
+  const { data, text } = req.body; // Vercel might send text directly
 
   // Basic validation and ignore messages from the bot itself to prevent loops
   if (data && data.personEmail && !data.personEmail.endsWith('@webex.bot')) {
@@ -95,10 +93,13 @@ app.post('/webex-webhook', (req, res) => {
     // Broadcast the message to all connected WebSocket clients
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
+        // Attempt to find the message text from common webhook payload structures
+        const messageText = req.body.text || (data.text) || 'New message from Webex';
+
         const webexMessage: ChatMessage = {
-            id: data.id,
+            id: data.id || `webex-${Date.now()}`,
             sender: Sender.Webex,
-            text: req.body.text, // Assuming you configure the webhook to send plaintext message
+            text: messageText,
             timestamp: new Date(data.created).toLocaleTimeString(),
         };
         client.send(JSON.stringify(webexMessage));
@@ -182,7 +183,7 @@ const sendWebexMessage = async (botToken: string, spaceId: string, message: stri
         });
         if (!response.ok) {
             const err = await response.json();
-            throw new Error(`Webex API Error: ${err.message}`);
+            throw new Error(`Webex API Error: ${JSON.stringify(err)}`);
         }
         console.log('Message sent successfully to Webex.');
     } catch (error) {
