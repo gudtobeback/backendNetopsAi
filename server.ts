@@ -1,5 +1,5 @@
 
-import express, { Request, Response } from 'express';
+import express from 'express';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import dotenv from 'dotenv';
@@ -12,6 +12,8 @@ dotenv.config();
 const app = express();
 // Enable CORS for all routes
 app.use(cors());
+// FIX: Add express.json() middleware to parse JSON request bodies for all routes, resolving a type error.
+app.use(express.json());
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
@@ -82,9 +84,8 @@ wss.on('connection', (ws: WebSocket) => {
 
 // --- Webex Webhook Endpoint ---
 
-// FIX: Added explicit types for req and res to resolve type inference issues.
-// This resolves issues with req.body and res.sendStatus, which were causing type errors.
-app.post('/webex-webhook', express.json(), (req: Request, res: Response) => {
+// FIX: Removed express.json() from route-specific middleware as it is now handled globally.
+app.post('/webex-webhook', (req, res) => {
   const { data } = req.body;
 
   // Basic validation and ignore messages from the bot itself to prevent loops
