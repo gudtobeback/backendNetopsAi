@@ -4,7 +4,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { GoogleGenAI, GenerateContentResponse, Content, Part } from '@google/genai';
-import { ChatMessage, MerakiDevice, NetworkConfiguration, Sender, WsUserMessage } from 'types';
+import { ChatMessage, MerakiDevice, NetworkConfiguration, Sender, WsUserMessage } from '/type/types';
 
 dotenv.config();
 
