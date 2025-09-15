@@ -2,9 +2,10 @@
   "name": "netops-ai-assistant-backend",
   "version": "1.0.0",
   "description": "Backend server for the NetOps AI Assistant",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node server.js",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "dev": "nodemon server.ts"
   },
   "keywords": [],
