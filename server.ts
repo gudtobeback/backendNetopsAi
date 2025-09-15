@@ -1,15 +1,11 @@
 
-
-
-
-
-import express from 'express';
+import express, { Request, Response } from 'express';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { GoogleGenAI, GenerateContentResponse, Content, Part } from '@google/genai';
-import { ChatMessage, MerakiDevice, NetworkConfiguration, Sender, WsUserMessage } from '../types';
+import { ChatMessage, MerakiDevice, NetworkConfiguration, Sender, WsUserMessage } from './types';
 
 dotenv.config();
 
@@ -86,9 +82,9 @@ wss.on('connection', (ws: WebSocket) => {
 
 // --- Webex Webhook Endpoint ---
 
-// FIX: Removed explicit types for req and res to allow for correct type inference by Express.
+// FIX: Added explicit types for req and res to resolve type inference issues.
 // This resolves issues with req.body and res.sendStatus, which were causing type errors.
-app.post('/webex-webhook', express.json(), (req, res) => {
+app.post('/webex-webhook', express.json(), (req: Request, res: Response) => {
   const { data } = req.body;
 
   // Basic validation and ignore messages from the bot itself to prevent loops
